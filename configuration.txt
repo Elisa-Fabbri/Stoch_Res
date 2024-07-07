@@ -1,0 +1,38 @@
+#This is a configuration file used by simulation.py
+
+[potential_parameters]
+
+a = 1
+b = 1
+
+[simulation_parameters]
+
+method = euler
+
+h = 0.01
+t_end = 1000
+num_simulations = 20
+
+split_x_0 = True
+normal_x_0 = True
+
+x_0 = 1 
+#x_ 0 è una delle soluzioni stabili: va calcolata in base ai parametri del potenziale
+t_0 = 0
+
+noise = True
+D_start = 0.01
+D_end = 0.15
+num_Ds = 10
+
+periodic_forcing = False
+amplitude = 0.25
+omega = 0.1
+
+random_seed = 7
+
+[simulation_directory]
+
+output_directory = Euler_no_forcing
+
+
