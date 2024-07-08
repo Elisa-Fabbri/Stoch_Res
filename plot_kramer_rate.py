@@ -128,4 +128,43 @@ plt.plot(D, kramer_rate, label='Kramer rate')
 plt.legend()
 plt.savefig('immagini/kramer_rate_max_comparison.png')
 plt.show()
+
+#Faccio lo stesso con threshold sul minimo
+
+Euler_kramer_rate_df = pd.DataFrame(columns=['D', 'kramer_rate', 'std_kramer_rate'])
+RK_kramer_rate_df = pd.DataFrame(columns=['D', 'kramer_rate', 'std_kramer_rate'])
+
+for method in ['Euler', 'RK']:
+    folder = f'./{method}_no_forcing/'
+    file = 'residence_times_min.pkl'
+    path = os.path.join(folder, file)
+    print(method)
+    residence_times_dict = joblib.load(path)
+    for key, residence_times in residence_times_dict.items():
+        if key == 'ts':
+            continue
+        mean_residence_time = np.mean(residence_times) if len(residence_times) > 0 else 0
+        std_residence_time = np.std(residence_times) if len(residence_times) > 0 else 0
+        escape_rates = 1 / mean_residence_time if mean_residence_time != 0 else 0
+        std_rates = std_residence_time / mean_residence_time**2 if mean_residence_time != 0 else 0
+
+        df_to_concat = pd.DataFrame({'D': [key], 'kramer_rate': [escape_rates], 'std_kramer_rate': [std_rates]})
+        if method == 'Euler':
+            Euler_kramer_rate_df = pd.concat([Euler_kramer_rate_df, df_to_concat])
+        else:
+            RK_kramer_rate_df = pd.concat([RK_kramer_rate_df, df_to_concat])
+Euler_kramer_rate_df = Euler_kramer_rate_df.sort_values(by='D')
+RK_kramer_rate_df = RK_kramer_rate_df.sort_values(by='D')
+
+# Plot dei risultati contro il tasso di fuga di Kramer teorico
+
+plt.figure()
+plt.errorbar(Euler_kramer_rate_df['D'], Euler_kramer_rate_df['kramer_rate'], yerr=Euler_kramer_rate_df['std_kramer_rate'], 
+             marker = 'o', linestyle = 'none', label = 'Euler')
+plt.errorbar(RK_kramer_rate_df['D'], RK_kramer_rate_df['kramer_rate'], yerr=RK_kramer_rate_df['std_kramer_rate'],
+                marker = 'o', linestyle = 'none', label='RK')
+plt.plot(D, kramer_rate, label='Kramer rate')
+plt.legend()
+plt.savefig('immagini/kramer_rate_min_comparison.png')
+plt.show()
     

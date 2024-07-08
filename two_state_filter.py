@@ -36,7 +36,7 @@ import aesthetics as aes
 #Legge da terminale il file da leggere
 
 trajectory_file = sys.argv[1]
-threshold_choice = sys.argv[2] #max or flex
+threshold_choice = sys.argv[2] #max or flex or min
 
 #Leggi il nome della directory da trajectory_file
 directory = os.path.dirname(trajectory_file)
@@ -52,12 +52,16 @@ b = float(config['potential_parameters']['b'])
 parameters = [a, b]
 
 positive_flex = fn.positive_flex_quartic_potential(parameters)
+pos_min = fn.positive_min_quartic_potential(parameters)
 
 if threshold_choice == 'max':
     positive_threshold = negative_threshold = 0
 elif threshold_choice == 'flex':
     positive_threshold = positive_flex
     negative_threshold = -positive_flex
+elif threshold_choice == 'min':
+    positive_threshold = pos_min
+    negative_threshold = -pos_min
 else:
     with aes.red_text():
         print('Error: The threshold choice must be either "max" or "flex"!')
