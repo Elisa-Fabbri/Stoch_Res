@@ -21,6 +21,17 @@ def transcendental_equation(D_SR, omega, delta_V, potential_second_derivative_mi
     rhs = omega**2 * ((delta_V / D_SR) - 1)
     return lhs - rhs
 
+def time_scale_matching_condition(omega, 
+                                    barrier_height, 
+                                    potential_second_derivative_min, 
+                                    potential_second_derivative_max):
+    half_period = np.pi / omega
+    rk = 1 / half_period
+    return fn.find_D_from_kramer_rate(barrier_height = barrier_height,
+                                      potential_second_derivative_min = potential_second_derivative_min,
+                                      potential_second_derivative_max = potential_second_derivative_max,
+                                      kramer_rate = rk)
+
 
 D_SR_initial_guess = 0.05
 
@@ -43,3 +54,9 @@ else:
 
 print('If the prefactor of the Kramers rate is independent of D, the value that maximizes the SNR is:',
        barrier_height/2 )
+
+print('The time scale matching condition gives:', time_scale_matching_condition(omega,
+                                                                                barrier_height,
+                                                                                potential_second_derivative_min,
+                                                                                potential_second_derivative_max)
+        )

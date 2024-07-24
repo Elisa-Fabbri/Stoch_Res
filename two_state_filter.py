@@ -81,6 +81,8 @@ for key, trajectory in trajectories_to_binarize.items():
     if key == 'ts':
         continue
     #Per ciascun rumore ci sono num_simulations traiettorie
+    num_points = trajectory.shape[1]
+    print(num_points)
     trajectories_to_binarize[key] = fn.binarize_trajectory(trajectory, positive_threshold, negative_threshold)
 
 joblib.dump(trajectories_to_binarize, output_file)

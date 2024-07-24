@@ -67,8 +67,11 @@ binarized_trajectory = sys.argv[1]
 
 #Leggi il nome della directory da trajectory_file
 directory = os.path.dirname(binarized_trajectory)
+filename = os.path.basename(binarized_trajectory)
 
-output_file = f'autocorrelation.pkl'
+threshold_choice = filename.split('_')[1].split('.')[0]
+
+output_file = f'autocorrelation_{threshold_choice}.pkl'
 output_file = os.path.join(directory, output_file)
 
 binarized_trajectory = joblib.load(binarized_trajectory)

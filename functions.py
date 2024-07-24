@@ -5,61 +5,63 @@ and analyze the results.
 
 import numpy as np
 
-def stochRK4(fn, # Funzione che definisce il sistema di equazioni differenziali
-             t_end, # Tempo finale della simulazione
-             h, # Passo temporale dell'integratore
-             y_0, # Condizione iniziale
-             D, # Metà varianza del rumore
-             parameters, # Parametri aggiuntivi della funzione
-             N, #numero di simulazioni 
-             t_0 = 0.,
-             A = 0,
-             omega = 0,
-             noise_bool = True,
-             normal_x_0 = True,
-             split_x_0 = False):
-    
+def stochRK4(fn,  # Funzione che definisce il sistema di equazioni differenziali
+             t_end,  # Tempo finale della simulazione
+             h,  # Passo temporale dell'integratore
+             y_0,  # Condizione iniziale
+             D,  # Metà varianza del rumore
+             parameters,  # Parametri aggiuntivi della funzione
+             N,  # numero di simulazioni 
+             t_0=0.,
+             A=0,
+             omega=0,
+             noise_bool=True,
+             normal_x_0=True,
+             split_x_0=False):
 
-    lh = h / 2. # Define leapfrog "half step"
+    lh = h / 2.  # Define leapfrog "half step"
 
-    ts       = np.arange(t_0, t_end, lh) # Array di tempi della simulazione
-    #ys       = np.zeros((1, len(ts))) # Array di soluzioni
-    ys = np.zeros((N, len(ts)))
+    ts = np.arange(t_0, t_end, lh)  # Array di tempi della simulazione
+    ys = np.zeros((N, len(ts)))  # Array di soluzioni
 
     if split_x_0 == False:
         y_0 = np.array([y_0] * N)
     else:
         y_0 = np.array([y_0] * (N // 2) + ([- y_0]) * (N // 2))
-    
+
     ys[:, 0] = y_0
 
-    #print('Initial ys:', ys)
-    if noise_bool==True and normal_x_0 == True:
+    if noise_bool and normal_x_0:
         stoch_step = True
     else:
         stoch_step = False
-    
-    for i, t in enumerate(ts): # Per ogni tempo della simulazione
+
+    # Genera una fase iniziale casuale per ogni simulazione
+    initial_phases = np.random.uniform(0, 2 * np.pi, N)
+
+    for i, t in enumerate(ts):  # Per ogni tempo della simulazione
         if stoch_step:
-            noise = np.random.normal(size = N)
-            ys[:, i] += np.sqrt(2 * D * h) * noise # Aggiunge rumore a passi alternati
-        k1       = fn(t        , ys[:,i]               , parameters, A, omega) 
-        k2       = fn(t + lh/2., ys[:,i] + lh * k1 / 2., parameters, A, omega) 
-        k3       = fn(t + lh/2., ys[:,i] + lh * k2 / 2., parameters, A, omega) 
-        k4       = fn(t + lh   , ys[:,i] + lh * k3     , parameters, A, omega) 
+            noise = np.random.normal(size=N)
+            ys[:, i] += np.sqrt(2 * D * h) * noise  # Aggiunge rumore a passi alternati
+        
+        # Calcola k1, k2, k3, k4 con le fasi iniziali differenti
+        k1 = fn(t, ys[:, i], parameters, A, omega, initial_phases)
+        k2 = fn(t + lh / 2., ys[:, i] + lh * k1 / 2., parameters, A, omega, initial_phases)
+        k3 = fn(t + lh / 2., ys[:, i] + lh * k2 / 2., parameters, A, omega, initial_phases)
+        k4 = fn(t + lh, ys[:, i] + lh * k3, parameters, A, omega, initial_phases)
+
         try:
-            ys[:,i+1] = ys[:,i] + lh * (k1 + 2. * k2 + 2. * k3 + k4) / 6.
+            ys[:, i + 1] = ys[:, i] + lh * (k1 + 2. * k2 + 2. * k3 + k4) / 6.
         except IndexError:
-            #print('Final ys', ys)
             return ts, ys
-        if noise_bool==True:
+        
+        if noise_bool:
             stoch_step = not stoch_step
 
     return ts, ys
 
 
-def euler(fn, t_end, h, y_0, D, parameters, N, t_0 = 0., A = 0, omega = 0, noise_bool = True, normal_x_0 = True,
-          split_x_0 = False):
+def euler(fn, t_end, h, y_0, D, parameters, N, t_0=0., A=0, omega=0, noise_bool=True, normal_x_0=True, split_x_0=False):
     
     ts = np.arange(t_0, t_end, h)
     ys = np.zeros((N, len(ts)))
@@ -75,6 +77,10 @@ def euler(fn, t_end, h, y_0, D, parameters, N, t_0 = 0., A = 0, omega = 0, noise
         stoch_step = True
     else:
         stoch_step = False
+    
+    # Genera una fase iniziale casuale per ogni simulazione
+    initial_phases = np.random.uniform(0, 2 * np.pi, N)
+
     for i, t in enumerate(ts[:-1]):  # Use ts[:-1] to avoid IndexError on ys[i+1]
         if stoch_step == True:
             noise = np.random.normal(size=N)
@@ -82,9 +88,10 @@ def euler(fn, t_end, h, y_0, D, parameters, N, t_0 = 0., A = 0, omega = 0, noise
         if noise_bool == True and stoch_step == False:
             stoch_step = True
         
-        ys[:, i+1] = ys[:, i] + fn(t, ys[:, i], parameters, A, omega) * h
+        ys[:, i+1] = ys[:, i] + fn(t, ys[:, i], parameters, A, omega, initial_phases) * h
     
     return ts, ys
+
 
 
 def potential(x, a, b):
@@ -109,12 +116,15 @@ def positive_flex_quartic_potential(parameters):
     a, b = parameters
     return np.sqrt(a/(3*b))
 
-def system(t, x, parameters, amplitude=0, omega=0):
+def system(t, x, parameters, amplitude=0, omega=0, phases=None):
     a, b = parameters
-    # Calcolo della derivata del potenziale quartico
     potential_derivative = -quartic_potential_derivative(x, a, b)
-    # Termini sinusoidali aggiunti alla derivata del potenziale
-    combined_term = potential_derivative + amplitude * np.cos(omega * t)
+    
+    if phases is None:
+        combined_term = potential_derivative + amplitude * np.cos(omega * t)
+    else:
+        combined_term = potential_derivative + amplitude * np.cos(omega * t + phases)
+    
     return np.array([combined_term])
 
 def binarize_trajectory(trajectory, positive_threshold, negative_threshold):
@@ -170,6 +180,24 @@ def kramer_rate(potential_second_derivative_min,
     prefactor = (potential_second_derivative_min * (- potential_second_derivative_max)) / (2 * np.pi)
     return prefactor*np.exp(- barrier_height / D)
 
+def kramer_rate_simplified(barrier_height,
+                           D):
+    """
+    This should be valid for a symmetric - bistable potential with 
+    a = 1 and b = 1
+    """
+    prefactor = np.sqrt(2) * np.pi
+    return prefactor*np.exp(- barrier_height / D)
+
+def find_D_from_kramer_rate(barrier_height,
+                            potential_second_derivative_min,
+                            potential_second_derivative_max,
+                            kramer_rate):
+    
+    log_argument = (2 * np.pi * kramer_rate) / (potential_second_derivative_min * (- potential_second_derivative_max))
+    log = np.log(log_argument)
+    return - (barrier_height / log)
+    
 def calculate_escape_rates(residence_times):
     escape_rates = np.zeros_like(residence_times[:, 0], dtype=float)  # Array per memorizzare i tassi di fuga
     

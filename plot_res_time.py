@@ -8,6 +8,70 @@ import numpy as np
 import functions as fn
 import configparser
 
+import numpy as np
+import matplotlib.pyplot as plt
+import joblib
+
+# Carica i dati
+residence_times = './Euler_forcing/residence_times_min.pkl'
+
+# Legge i dizionari
+Euler_residence_times_dict = joblib.load(residence_times)
+
+D_start = 0.04
+D_end = 0.07
+num_Ds = 4
+
+# Definisci i valori di D
+D_values = np.linspace(0.04, 0.07, 4)
+
+# Crea figure e assi per i subplot
+fig, axes = plt.subplots(2, 2, figsize=(13, 6))
+
+# Parametro omega e calcolo del periodo di forzamento
+omega = 0.1
+forcing_period = (2 * np.pi) / omega
+
+# Itera sui valori di D
+for i, D_value in enumerate(D_values):
+    row = i // 2  # Riga dell'i-esimo subplot
+    col = i % 2   # Colonna dell'i-esimo subplot
+
+    # Ottieni la lista dei tempi di residenza per D_value
+    Euler_residence_times = Euler_residence_times_dict.get(D_value, [])
+    if len(Euler_residence_times) == 0:
+        continue
+
+    # Calcola T/forcing_period per ciascun tempo di residenza
+    normalized_residence_times = np.array(Euler_residence_times) / forcing_period
+
+    # Plot dell'istogramma nell'i-esimo subplot, limitando l'intervallo dei bin tra 0 e 5
+    ax = axes[row, col]
+    ax.hist(normalized_residence_times, bins=200, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5)) #density = True
+
+    # Linea verticale a 1 (corrispondente a T = forcing_period)
+    ax.axvline(x=1, color='black', linestyle='--', linewidth=1)
+
+    # Aggiunta di etichette e legenda
+    ax.set_ylabel('Density')
+    ax.legend()
+
+    # Imposta l'etichetta per l'asse x
+    ax.set_xlabel(r'Residence times $T/T_{\text{forcing}}$')
+
+# Titolo generale e aggiustamento dello spaziamento tra i subplot
+plt.suptitle('Residence times distribution for increasing D values (normalized by forcing period)')
+plt.tight_layout()
+
+# Mostra la figura
+plt.show()
+
+
+
+
+
+"""
+
 #---------------------------------------------------------------------------------------------------------------
 
 def theoretical_residence_time(rk, time):
@@ -40,7 +104,7 @@ RK_residence_times_dict = joblib.load(RK_path_flex)
 #D_values = list(Euler_residence_times_dict.keys())
 #print(D_values)
 
-D_value = 0.13444444444444442
+D_value = 0.1388888888888889
 
 #Legge i tempi di residenza
 Euler_residence_times = Euler_residence_times_dict[D_value]
@@ -106,9 +170,9 @@ print(D_values)
 #max_res = max([max(RK_forcing_residence_times_dict[D]) for D in D_values if len(RK_forcing_residence_times_dict[D]) > 0])
 max_res = 200
 min_res = min([min(RK_forcing_residence_times_dict[D]) for D in D_values if len(RK_forcing_residence_times_dict[D]) > 0])
-bins = np.linspace(min_res, max_res, 80)
+bins = np.linspace(min_res, max_res, 100)
 
-D_values = [0.025555555555555554, 0.056666666666666664, 0.10333333333333332, 0.15]
+D_values = [0.07444444444444444, 0.10666666666666666, 0.1388888888888889, 0.1711111111111111] 
 
 fig, axes = plt.subplots(2, 2, figsize=(13, 6))
 
@@ -136,7 +200,7 @@ axes[1, 0].set_xlabel('Residence times')
 axes[1, 1].set_xlabel('Residence times')
 
 # Aggiustamento dello spaziamento tra i subplot
-plt.suptitle('Residence times distribution for increasing D values')
+plt.suptitle('Residence times distribution for increasing D values (flex threshold)')
 plt.tight_layout()
 
 # Mostra la figura
@@ -147,7 +211,7 @@ plt.savefig('immagini/residence_time_increasing_D_flex.png')
 RK_residence_times_dict = joblib.load(RK_path_min)
 Euler_residence_times_dict = joblib.load(Euler_path_min)
 
-D_value = 0.13444444444444442
+D_value = 0.1388888888888889
 
 Euler_residence_times = Euler_residence_times_dict[D_value]
 RK_residence_times = RK_residence_times_dict[D_value]
@@ -159,7 +223,8 @@ barrier_height = fn.potential(0, a_Euler, b_Euler) - fn.potential(min_potential,
 
 bin_min = min(min(Euler_residence_times), min(RK_residence_times))
 bin_max = max(max(Euler_residence_times), max(RK_residence_times))
-bins = np.linspace(bin_min, bin_max, 100)
+#bin_max = 50
+bins = np.linspace(bin_min, bin_max, 200)
 
 kr_teorico = fn.kramer_rate(second_der_min, second_der_max, barrier_height, D_value)
 theoretical_residence_times_distribution = [theoretical_residence_time(kr_teorico, bin) for bin in bins]
@@ -185,9 +250,10 @@ print(D_values)
 #max_res = max([max(RK_forcing_residence_times_dict[D]) for D in D_values if len(RK_forcing_residence_times_dict[D]) > 0])
 max_res = 200
 min_res = min([min(RK_forcing_residence_times_dict[D]) for D in D_values if len(RK_forcing_residence_times_dict[D]) > 0])
-bins = np.linspace(min_res, max_res, 80)
+bins = np.linspace(min_res, max_res, 100)
 
-D_values = [0.025555555555555554, 0.056666666666666664, 0.10333333333333332, 0.15]
+
+D_values = [0.07444444444444444, 0.10666666666666666, 0.1388888888888889, 0.1711111111111111] 
 
 fig, axes = plt.subplots(2, 2, figsize=(13, 6))
 
@@ -215,11 +281,10 @@ axes[1, 0].set_xlabel('Residence times')
 axes[1, 1].set_xlabel('Residence times')
 
 # Aggiustamento dello spaziamento tra i subplot
-plt.suptitle('Residence times distribution for increasing D values')
+plt.suptitle('Residence times distribution for increasing D values (min threshold)')
 plt.tight_layout()
 
 # Mostra la figura
 plt.savefig('immagini/residence_time_increasing_D_min.png')
 plt.show()
-
-
+"""
