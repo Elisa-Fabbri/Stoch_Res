@@ -64,7 +64,7 @@ plt.suptitle('Residence times distribution for increasing D values (normalized b
 plt.tight_layout()
 
 # Mostra la figura
-plt.show()
+plt.savefig('./Euler_forcing/res_times.png')
 
 
 
