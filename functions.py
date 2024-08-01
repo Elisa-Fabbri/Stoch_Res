@@ -5,59 +5,61 @@ and analyze the results.
 
 import numpy as np
 
-def stochRK4(fn,  # Funzione che definisce il sistema di equazioni differenziali
-             t_end,  # Tempo finale della simulazione
-             h,  # Passo temporale dell'integratore
-             y_0,  # Condizione iniziale
-             D,  # Metà varianza del rumore
-             parameters,  # Parametri aggiuntivi della funzione
-             N,  # numero di simulazioni 
-             t_0=0.,
-             A=0,
-             omega=0,
-             noise_bool=True,
-             normal_x_0=True,
-             split_x_0=False):
 
-    lh = h / 2.  # Define leapfrog "half step"
+def stochRK4(fn, t_end, h, y_0, D, parameters, N, 
+             t_0=0., A=0, omega=0, noise_bool=True, 
+             normal_x_0=True, split_x_0=False):
+    """
+    Implementazione del metodo di Runge-Kutta di ordine 4 per equazioni differenziali stocastiche (SDE).
 
-    ts = np.arange(t_0, t_end, lh)  # Array di tempi della simulazione
+    :param fn: Funzione che definisce il sistema di equazioni differenziali.
+    :param t_end: Tempo finale della simulazione.
+    :param h: Passo temporale dell'integratore.
+    :param y_0: Condizione iniziale.
+    :param D: Metà della varianza del rumore.
+    :param parameters: Parametri aggiuntivi della funzione fn.
+    :param N: Numero di simulazioni indipendenti.
+    :param t_0: Tempo iniziale (default 0).
+    :param A: Ampiezza del segnale periodico (default 0).
+    :param omega: Frequenza del segnale periodico (default 0).
+    :param noise_bool: Booleano per l'abilitazione del rumore (default True).
+    :param normal_x_0: Booleano per l'uso di rumore normale nella condizione iniziale (default True).
+    :param split_x_0: Booleano per la suddivisione delle condizioni iniziali (default False).
+    :return: Una coppia di array (ts, ys) con i tempi di simulazione e le soluzioni simulate.
+    """
+
+    ts = np.arange(t_0, t_end, h)  # Array di tempi della simulazione
     ys = np.zeros((N, len(ts)))  # Array di soluzioni
 
-    if split_x_0 == False:
+    # Imposta le condizioni iniziali
+    if not split_x_0:
         y_0 = np.array([y_0] * N)
     else:
-        y_0 = np.array([y_0] * (N // 2) + ([- y_0]) * (N // 2))
+        y_0 = np.array([y_0] * (N // 2) + [-y_0] * (N // 2))
 
     ys[:, 0] = y_0
-
-    if noise_bool and normal_x_0:
-        stoch_step = True
-    else:
-        stoch_step = False
 
     # Genera una fase iniziale casuale per ogni simulazione
     initial_phases = np.random.uniform(0, 2 * np.pi, N)
 
-    for i, t in enumerate(ts):  # Per ogni tempo della simulazione
-        if stoch_step:
-            noise = np.random.normal(size=N)
-            ys[:, i] += np.sqrt(2 * D * h) * noise  # Aggiunge rumore a passi alternati
+    # Simulazione del processo
+    for i in range(len(ts) - 1):  # L'ultima iterazione non ha successore
+        t = ts[i]
         
-        # Calcola k1, k2, k3, k4 con le fasi iniziali differenti
+        # Calcola i termini di Runge-Kutta
         k1 = fn(t, ys[:, i], parameters, A, omega, initial_phases)
-        k2 = fn(t + lh / 2., ys[:, i] + lh * k1 / 2., parameters, A, omega, initial_phases)
-        k3 = fn(t + lh / 2., ys[:, i] + lh * k2 / 2., parameters, A, omega, initial_phases)
-        k4 = fn(t + lh, ys[:, i] + lh * k3, parameters, A, omega, initial_phases)
-
-        try:
-            ys[:, i + 1] = ys[:, i] + lh * (k1 + 2. * k2 + 2. * k3 + k4) / 6.
-        except IndexError:
-            return ts, ys
+        k2 = fn(t + h / 2., ys[:, i] + h * k1 / 2., parameters, A, omega, initial_phases)
+        k3 = fn(t + h / 2., ys[:, i] + h * k2 / 2., parameters, A, omega, initial_phases)
+        k4 = fn(t + h, ys[:, i] + h * k3, parameters, A, omega, initial_phases)
         
-        if noise_bool:
-            stoch_step = not stoch_step
+        # Update della soluzione
+        ys[:, i + 1] = ys[:, i] + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6.
 
+        # Aggiunge rumore stocastico se abilitato
+        if noise_bool:
+            noise = np.random.normal(size=N)
+            ys[:, i + 1] += np.sqrt(2 * D * h) * noise
+    
     return ts, ys
 
 
@@ -215,3 +217,60 @@ def calculate_escape_rates_err(residence_times):
     escape_rates_err[non_zero_mask] = residence_times[non_zero_mask, 1] / residence_times[non_zero_mask, 0]**2
     
     return escape_rates_err
+
+"""
+def stochRK4(fn,  # Funzione che definisce il sistema di equazioni differenziali
+             t_end,  # Tempo finale della simulazione
+             h,  # Passo temporale dell'integratore
+             y_0,  # Condizione iniziale
+             D,  # Metà varianza del rumore
+             parameters,  # Parametri aggiuntivi della funzione
+             N,  # numero di simulazioni 
+             t_0=0.,
+             A=0,
+             omega=0,
+             noise_bool=True,
+             normal_x_0=True,
+             split_x_0=False):
+
+    lh = h / 2.  # Define leapfrog "half step"
+
+    ts = np.arange(t_0, t_end, lh)  # Array di tempi della simulazione
+    ys = np.zeros((N, len(ts)))  # Array di soluzioni
+
+    if split_x_0 == False:
+        y_0 = np.array([y_0] * N)
+    else:
+        y_0 = np.array([y_0] * (N // 2) + ([- y_0]) * (N // 2))
+
+    ys[:, 0] = y_0
+
+    if noise_bool and normal_x_0:
+        stoch_step = True
+    else:
+        stoch_step = False
+
+    # Genera una fase iniziale casuale per ogni simulazione
+    initial_phases = np.random.uniform(0, 2 * np.pi, N)
+
+    for i, t in enumerate(ts):  # Per ogni tempo della simulazione
+        if stoch_step:
+            noise = np.random.normal(size=N)
+            ys[:, i] += np.sqrt(2 * D * h) * noise  # Aggiunge rumore a passi alternati
+        
+        # Calcola k1, k2, k3, k4 con le fasi iniziali differenti
+        k1 = fn(t, ys[:, i], parameters, A, omega, initial_phases)
+        k2 = fn(t + lh / 2., ys[:, i] + lh * k1 / 2., parameters, A, omega, initial_phases)
+        k3 = fn(t + lh / 2., ys[:, i] + lh * k2 / 2., parameters, A, omega, initial_phases)
+        k4 = fn(t + lh, ys[:, i] + lh * k3, parameters, A, omega, initial_phases)
+
+        try:
+            ys[:, i + 1] = ys[:, i] + lh * (k1 + 2. * k2 + 2. * k3 + k4) / 6.
+        except IndexError:
+            return ts, ys
+        
+        if noise_bool:
+            stoch_step = not stoch_step
+
+    return ts, ys
+"""
