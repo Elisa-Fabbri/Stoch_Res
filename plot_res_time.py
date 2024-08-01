@@ -13,20 +13,20 @@ import matplotlib.pyplot as plt
 import joblib
 
 # Carica i dati
-residence_times = './Euler_forcing/residence_times_min.pkl'
+residence_times = './RK_forcing/residence_times_min.pkl'
 
 # Legge i dizionari
 Euler_residence_times_dict = joblib.load(residence_times)
 
 D_start = 0.04
-D_end = 0.07
-num_Ds = 4
+D_end = 0.10
+num_Ds = 8
 
 # Definisci i valori di D
-D_values = np.linspace(0.04, 0.07, 4)
+D_values = np.linspace(D_start, D_end, num_Ds)
 
 # Crea figure e assi per i subplot
-fig, axes = plt.subplots(2, 2, figsize=(13, 6))
+fig, axes = plt.subplots(4, 2, figsize=(13, 10))
 
 # Parametro omega e calcolo del periodo di forzamento
 omega = 0.1
@@ -47,7 +47,7 @@ for i, D_value in enumerate(D_values):
 
     # Plot dell'istogramma nell'i-esimo subplot, limitando l'intervallo dei bin tra 0 e 5
     ax = axes[row, col]
-    ax.hist(normalized_residence_times, bins=200, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5)) #density = True
+    ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5)) #density = True
 
     # Linea verticale a 1 (corrispondente a T = forcing_period)
     ax.axvline(x=1, color='black', linestyle='--', linewidth=1)
@@ -64,7 +64,7 @@ plt.suptitle('Residence times distribution for increasing D values (normalized b
 plt.tight_layout()
 
 # Mostra la figura
-plt.savefig('./Euler_forcing/res_times.png')
+plt.savefig('./RK_forcing/res_times.png')
 
 
 

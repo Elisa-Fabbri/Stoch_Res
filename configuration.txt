@@ -7,7 +7,7 @@ b = 1
 
 [simulation_parameters]
 
-method = euler
+method = RK4
 
 h = 0.01
 t_end = 100000
@@ -21,21 +21,22 @@ x_0 = 1
 t_0 = 0
 
 noise = True
-D_start = 0.04
-D_end = 0.07
-num_Ds = 4
+D_start = 0.03
+D_end = 0.15
+num_Ds = 16
+
 
 periodic_forcing = True
 #Prova a diminuire l'ampiezza del rumore -> ho provato con 0.05 ma non viene niente. 
 # Posso anche provare, altrimenti, a diminuire l'ampiezza ma a provare ad aumentare omega in modo che il sistema abbia
 #Più possibilità nel periodo di saltare
-amplitude = 0.025
+amplitude = 0.05
 omega = 0.1
 
 random_seed = 7
 
 [simulation_directory]
 
-output_directory = Euler_forcing
+output_directory = RK_forcing
 
 
