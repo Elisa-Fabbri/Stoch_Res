@@ -50,7 +50,7 @@ def plot_histograms(D_values, title, filename):
 
         # Plot dell'istogramma nell'i-esimo subplot, limitando l'intervallo dei bin tra 0 e 5
         ax = axes[row, col]
-        ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5))
+        ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 3)}', range=(0, 5))
         #ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 3)}', range=(0, 5), density=True)
 
         # Linea verticale a 1 (corrispondente a T = forcing_period)
@@ -59,7 +59,7 @@ def plot_histograms(D_values, title, filename):
         # Aggiunta di etichette e legenda
         ax.set_ylabel('Counts')
         #ax.set_ylabel('Density')
-        ax.legend('upper right')
+        ax.legend()
 
         # Imposta l'etichetta per l'asse x
         ax.set_xlabel(r'Residence times $T/T_{\text{forcing}}$')
