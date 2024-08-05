@@ -59,7 +59,7 @@ def plot_histograms(D_values, title, filename):
         # Aggiunta di etichette e legenda
         ax.set_ylabel('Counts')
         #ax.set_ylabel('Density')
-        ax.legend()
+        ax.legend(loc = 'upper right')
 
         # Imposta l'etichetta per l'asse x
         ax.set_xlabel(r'Residence times $T/T_{\text{forcing}}$')
