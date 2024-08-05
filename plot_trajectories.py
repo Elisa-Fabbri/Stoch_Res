@@ -7,6 +7,7 @@ import pandas as pd
 import sys
 import joblib
 import matplotlib.pyplot as plt
+import os
 
 traj_path = 'RK_forcing/trajectories.pkl'
 
@@ -21,6 +22,14 @@ traj_dict.pop('ts')
 
 print('Number of trajectories:', len(traj_dict.keys()))
 
+#Creo una cartella per contenere le immagini
+
+if not os.path.exists('immagini'):
+    os.makedirs('immagini')
+
+if not os.path.exists('immagini/trajectories'):
+    os.makedirs('immagini/trajectories')
+
 #Faccio un grafico con 8 subplot per contenere le prime 8 traiettorie
 
 fig, axs = plt.subplots(4, 2, figsize=(15, 15))
@@ -34,7 +43,7 @@ for i, key in enumerate(traj_dict.keys()):
     axs[i].plot(ts, traj)
     axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
-plt.show()
+plt.savefig('immagini/trajectories/first_8_trajectories.png')
 plt.close()
 
 #Faccio un grafico con 8 subplot per contenere le ultime 8 traiettorie
@@ -50,7 +59,7 @@ for i, key in enumerate(traj_dict.keys()):
     axs[i - 8].plot(ts, traj)
     axs[i - 8].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
-plt.show()
+plt.savefig('immagini/trajectories/last_8_trajectories.png')
 plt.close()
 
 
