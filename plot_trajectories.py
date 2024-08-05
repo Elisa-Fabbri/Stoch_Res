@@ -40,9 +40,11 @@ for i, key in enumerate(traj_dict.keys()):
         break
     value = traj_dict[key]
     traj = value[0]
-    axs[i].plot(ts, traj)
-    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
+    axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.3)
+    axs[i].legend()
+    #axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
+#plt.show()
 plt.savefig('immagini/trajectories/first_8_trajectories.png')
 plt.close()
 
@@ -56,9 +58,10 @@ for i, key in enumerate(traj_dict.keys()):
         continue
     value = traj_dict[key]
     traj = value[0]
-    axs[i - 8].plot(ts, traj)
+    axs[i - 8].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.3)
     axs[i - 8].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
+#plt.show()
 plt.savefig('immagini/trajectories/last_8_trajectories.png')
 plt.close()
 
