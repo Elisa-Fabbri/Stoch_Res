@@ -111,7 +111,7 @@ if not os.path.isfile(config_file):
 
 config.read(config_file)
 
-t_end = float(config['simulation_parameters']['t_end'])
+t_end = float(config['simulation_parameters']['t_end'])//100
 h = float(config['simulation_parameters']['h'])
 x_0 = float(config['simulation_parameters']['x_0'])
 t_0 = float(config['simulation_parameters']['t_0'])
@@ -145,9 +145,9 @@ for i, key in enumerate(chosen_keys):
     traj = value[0]
     axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.5)
     #Plotto anche la forzante periodica
-    axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=0.3)
+    axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=0.03)
     #Plotto la forzante periodica normalizzata tra -1 e 1
-    axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=0.5)
+    axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=0.05)
     axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
 #plt.show()
