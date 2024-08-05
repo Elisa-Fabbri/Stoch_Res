@@ -8,7 +8,7 @@ import numpy as np
 
 def stochRK4(fn, t_end, h, y_0, D, parameters, N, 
              t_0=0., A=0, omega=0, noise_bool=True, 
-             normal_x_0=True, split_x_0=False):
+             normal_x_0=True, split_x_0=False, random_phase=True):
     """
     Implementazione del metodo di Runge-Kutta di ordine 4 per equazioni differenziali stocastiche (SDE).
 
@@ -39,8 +39,11 @@ def stochRK4(fn, t_end, h, y_0, D, parameters, N,
 
     ys[:, 0] = y_0
 
-    # Genera una fase iniziale casuale per ogni simulazione
-    initial_phases = np.random.uniform(0, 2 * np.pi, N)
+    if random_phase:
+        # Genera una fase iniziale casuale per ogni simulazione
+        initial_phases = np.random.uniform(0, 2 * np.pi, N)
+    else:
+        initial_phases = np.zeros(N)
 
     # Simulazione del processo
     for i in range(len(ts) - 1):  # L'ultima iterazione non ha successore
@@ -63,7 +66,8 @@ def stochRK4(fn, t_end, h, y_0, D, parameters, N,
     return ts, ys
 
 
-def euler(fn, t_end, h, y_0, D, parameters, N, t_0=0., A=0, omega=0, noise_bool=True, normal_x_0=True, split_x_0=False):
+def euler(fn, t_end, h, y_0, D, parameters, N, t_0=0., A=0, omega=0, noise_bool=True, 
+          normal_x_0=True, split_x_0=False, random_phase=True):
     
     ts = np.arange(t_0, t_end, h)
     ys = np.zeros((N, len(ts)))
@@ -80,8 +84,11 @@ def euler(fn, t_end, h, y_0, D, parameters, N, t_0=0., A=0, omega=0, noise_bool=
     else:
         stoch_step = False
     
-    # Genera una fase iniziale casuale per ogni simulazione
-    initial_phases = np.random.uniform(0, 2 * np.pi, N)
+    if random_phase:
+        # Genera una fase iniziale casuale per ogni simulazione
+        initial_phases = np.random.uniform(0, 2 * np.pi, N)
+    else:
+        initial_phases = np.zeros(N)
 
     for i, t in enumerate(ts[:-1]):  # Use ts[:-1] to avoid IndexError on ys[i+1]
         if stoch_step == True:
