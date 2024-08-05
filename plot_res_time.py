@@ -51,7 +51,7 @@ def plot_histograms(D_values, title, filename):
         # Plot dell'istogramma nell'i-esimo subplot, limitando l'intervallo dei bin tra 0 e 5
         ax = axes[row, col]
         #ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5))
-        ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 2)}', range=(0, 5), density=True)
+        ax.hist(normalized_residence_times, bins=100, alpha=0.5, label=f'D = {round(D_value, 3)}', range=(0, 5), density=True)
 
         # Linea verticale a 1 (corrispondente a T = forcing_period)
         ax.axvline(x=1, color='black', linestyle='--', linewidth=1)
@@ -80,3 +80,7 @@ if not os.path.exists(image_directory):
 # Crea i grafici per i due gruppi di valori di rumore
 plot_histograms(D_values_group1, 'Residence times distribution for first 8 D values (normalized by forcing period)', os.path.join(image_directory, 'res_times_group1.png'))
 plot_histograms(D_values_group2, 'Residence times distribution for last 8 D values (normalized by forcing period)', os.path.join(image_directory, 'res_times_group2.png'))
+
+D_values_mid = D_values[2:10]
+
+plot_histograms(D_values_mid, 'Residence times distribution increasing D values', os.path.join(image_directory, 'res_times_group_mid.png'))
