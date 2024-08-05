@@ -37,6 +37,7 @@ def stochRK4(fn, t_end, h, y_0, D, parameters, N,
     else:
         y_0 = np.array([y_0] * (N // 2) + [-y_0] * (N // 2))
 
+    print(y_0)
     ys[:, 0] = y_0
 
     if random_phase:
