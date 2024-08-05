@@ -150,7 +150,7 @@ for i, key in enumerate(chosen_keys):
     axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=0.5)
     axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
-plt.show()
-#plt.savefig('immagini/trajectories/chosen_trajectories.png')
+#plt.show()
+plt.savefig('immagini/trajectories/chosen_trajectories.png')
 plt.close()
 
