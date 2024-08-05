@@ -41,7 +41,7 @@ for i, key in enumerate(traj_dict.keys()):
     value = traj_dict[key]
     traj = value[0]
     axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.3)
-    axs[i].legend()
+    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
     #axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
 #plt.show()
