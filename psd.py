@@ -134,10 +134,22 @@ joblib.dump(SNR_list, output_file)
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-ax.plot([float(key) for key, _ in SNR_list], [SNR for _, SNR in SNR_list], 'o-')
+ax.plot([float(key) for key, _ in SNR_list], [SNR for _, SNR in SNR_list], 'o')
 ax.set_xlabel('D')
 ax.set_ylabel('SNR')
 
 plt.savefig(os.path.join(directory, f'SNR_{threshold_choice}.png'))
+#plt.show()
+plt.close()
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+ax.plot([float(key) for key, _ in SNR_list], [SNR for _, SNR in SNR_list], 'o')
+ax.set_xlabel('D')
+ax.set_ylabel('SNR')
+ax.set_yscale('log')
+plt.savefig(os.path.join(directory, f'SNR_{threshold_choice}_log.png'))
 #plt.show()
 plt.close()
