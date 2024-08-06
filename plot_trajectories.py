@@ -13,7 +13,10 @@ import sys
 import configparser
 import aesthetics as aes
 
-traj_path = 'RK_forcing/trajectories.pkl'
+#Legge con sys il path alle traiettorie
+
+traj_path = sys.argv[1]
+traj_folder = os.path.dirname(traj_path)
 
 #Load trajectories
 
@@ -28,48 +31,28 @@ print('Number of trajectories:', len(traj_dict.keys()))
 
 #Creo una cartella per contenere le immagini
 
-if not os.path.exists('immagini'):
-    os.makedirs('immagini')
+image_folder = os.path.join(traj_folder, 'immagini_trajectories')
 
-if not os.path.exists('immagini/trajectories'):
-    os.makedirs('immagini/trajectories')
 
-#Faccio un grafico con 8 subplot per contenere le prime 8 traiettorie
+if not os.path.exists(image_folder):
+    os.makedirs(image_folder)
 
-fig, axs = plt.subplots(4, 2, figsize=(15, 15))
-axs = axs.ravel()
-
-for i, key in enumerate(traj_dict.keys()):
-    if i >= 8:
-        break
-    value = traj_dict[key]
-    traj = value[0]
-    axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.3)
-    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
-    #axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
-plt.tight_layout()
-#plt.show()
-plt.savefig('immagini/trajectories/first_8_trajectories.png')
-plt.close()
-
-#Faccio un grafico con 8 subplot per contenere le ultime 8 traiettorie
-
-fig, axs = plt.subplots(4, 2, figsize=(15, 15))
-axs = axs.ravel()
-
-for i, key in enumerate(traj_dict.keys()):
-    if i < 8:
-        continue
-    value = traj_dict[key]
-    traj = value[0]
-    axs[i - 8].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.3)
-    axs[i - 8].set_title('Noise intensity: ' + str(round(float(key), 3)))
-plt.tight_layout()
-#plt.show()
-plt.savefig('immagini/trajectories/last_8_trajectories.png')
-plt.close()
 
 number_of_trajectories = len(traj_dict.keys())
+
+config_file = os.path.join(traj_folder, 'configuration.txt')
+
+#Read the configuration file:----------------------------------------------------------------------------------------
+
+config = configparser.ConfigParser()
+
+config.read(config_file)
+
+D_start = float(config['simulation_parameters']['D_start'])
+D_end = float(config['simulation_parameters']['D_end'])
+D_step = float(config['simulation_parameters']['num_Ds'])
+
+print('I valori di rumore simulati sono:', np.linspace(D_start, D_end, D_step))
 
 # Leggi gli indici dal terminale
 input_indices = input("Enter the indices of noise intensity values you want to plot (separated by commas): ")
@@ -94,22 +77,6 @@ except ValueError:
 
 #Runno una simulazione per ciascun valore di noise intensity scelto con stessi parametri 
 #delle simulazioni precedenti
-
-#Read the configuration file:-----------------------------------------------------------------------------------------
-
-config = configparser.ConfigParser()
-
-config_file = sys.argv[1]
-
-if not os.path.isfile(config_file):
-    with aes.red_text():
-        if config_file == 'configuration.txt':
-            print('Error: The default configuration file "configuration.txt" does not exist in the current folder!')
-        else:
-            print(f'Error: The specified configuration file "{config_file}" does not exist in the current folder!')
-        sys.exit()
-
-config.read(config_file)
 
 t_end = float(config['simulation_parameters']['t_end'])//100
 h = float(config['simulation_parameters']['h'])
@@ -145,9 +112,9 @@ for i, key in enumerate(chosen_keys):
     traj = value[0]
     axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=0.5)
     #Plotto anche la forzante periodica
-    axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=1)
+    axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=1, alpha=0.5)
     #Plotto la forzante periodica normalizzata tra -1 e 1
-    axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=1)
+    axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=1, linestyle='--', alpha=0.5)
     axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
 plt.tight_layout()
 #plt.show()
