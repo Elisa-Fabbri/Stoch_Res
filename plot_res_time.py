@@ -3,39 +3,55 @@ import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import configparser
-import sys
 
 # Carica i dati
-residence_times_file = './RK_forcing/residence_times_min.pkl'
+residence_times_file_1 = './RK_forcing_0.4/residence_times_min.pkl'
+residence_times_file_2 = './RK_forcing_0.2/residence_times_min.pkl'
 
 # Legge i dizionari
-residence_times_dict = joblib.load(residence_times_file)
+residence_times_dict_1 = joblib.load(residence_times_file_1)
+residence_times_dict_2 = joblib.load(residence_times_file_2)
 
-# Legge il file di configurazione con sys.argv
-config_file = sys.argv[1]
-config = configparser.ConfigParser()
-config.read(config_file)
+directory1 = os.path.dirname(residence_times_file_1)
+directory2 = os.path.dirname(residence_times_file_2)
 
-# Estrae i parametri
-D_start = float(config['simulation_parameters']['D_start'])
-D_end = float(config['simulation_parameters']['D_end'])
-num_Ds = int(config['simulation_parameters']['num_Ds'])
+configuration_file1 = os.path.join(directory1, 'configuration.txt')
+configuration_file2 = os.path.join(directory2, 'configuration.txt')
 
-# Definisci i valori di D
-D_values = np.linspace(D_start, D_end, num_Ds)
+config1 = configparser.ConfigParser()
+config1.read(configuration_file1)
 
-# Parametro omega e calcolo del periodo di forzamento
-omega = 0.1
+config2 = configparser.ConfigParser()
+config2.read(configuration_file2)
+
+D_start1 = float(config1['simulation_parameters']['D_start'])
+D_end1 = float(config1['simulation_parameters']['D_end'])
+num_Ds1 = int(config1['simulation_parameters']['num_Ds'])
+
+D_start2 = float(config2['simulation_parameters']['D_start'])
+D_end2 = float(config2['simulation_parameters']['D_end'])
+num_Ds2 = int(config2['simulation_parameters']['num_Ds'])
+
+D_values1 = np.linspace(D_start1, D_end1, num_Ds1)
+D_values2 = np.linspace(D_start2, D_end2, num_Ds2)
+
+omega = float(config1['simulation_parameters']['omega'])
 forcing_period = (2 * np.pi) / omega
 
-# Dividi D_values in due gruppi
-mid_point = len(D_values) // 2
-D_values_group1 = D_values[:mid_point]
-D_values_group2 = D_values[mid_point:]
+# Raggruppa i valori di D in 3 gruppi da 6
+
+D_values_group1 = D_values1[:6]
+D_values_group2 = D_values1[6:12]
+D_values_group3 = D_values1[12:]
+
+D_values_group4 = D_values2[:6]
+D_values_group5 = D_values2[6:12]
+D_values_group6 = D_values2[12:]
+
 
 # Funzione per creare istogrammi
-def plot_histograms(D_values, title, filename):
-    fig, axes = plt.subplots(4, 2, figsize=(13, 10))
+def plot_histograms(D_values, title, filename, residence_times_dict):
+    fig, axes = plt.subplots(3, 2, figsize=(13, 10))
     for i, D_value in enumerate(D_values):
         row = i // 2  # Riga dell'i-esimo subplot
         col = i % 2   # Colonna dell'i-esimo subplot
@@ -65,22 +81,27 @@ def plot_histograms(D_values, title, filename):
         ax.set_xlabel(r'Residence times $T/T_{\text{forcing}}$')
 
     # Titolo generale e aggiustamento dello spaziamento tra i subplot
-    plt.suptitle(title)
+    plt.suptitle(title, fontsize=16)
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Leave space for suptitle
 
     # Mostra la figura
     plt.savefig(filename)
     plt.close()
 
-image_directory = './immagini/residence_times'
+image_directory1 = os.path.join(directory1, 'images')
+image_directory2 = os.path.join(directory2, 'images')
 
-if not os.path.exists(image_directory):
-    os.makedirs(image_directory)
+# Crea la directory se non esiste
+if not os.path.exists(image_directory1):
+    os.makedirs(image_directory1)
 
-# Crea i grafici per i due gruppi di valori di rumore
-plot_histograms(D_values_group1, 'Residence times distribution for first 8 D values (normalized by forcing period)', os.path.join(image_directory, 'res_times_group1.png'))
-plot_histograms(D_values_group2, 'Residence times distribution for last 8 D values (normalized by forcing period)', os.path.join(image_directory, 'res_times_group2.png'))
+if not os.path.exists(image_directory2):
+    os.makedirs(image_directory2)
 
-D_values_mid = D_values[2:10]
+plot_histograms(D_values_group1, 'Residence times distribution for first 6 D values (normalized by forcing period)', os.path.join(image_directory1, 'res_times_group1.png'), residence_times_dict_1)
+plot_histograms(D_values_group2, 'Residence times distribution for next 6 D values (normalized by forcing period)', os.path.join(image_directory1, 'res_times_group2.png'), residence_times_dict_1)
+plot_histograms(D_values_group3, 'Residence times distribution for last 6 D values (normalized by forcing period)', os.path.join(image_directory1, 'res_times_group3.png'), residence_times_dict_1)
 
-plot_histograms(D_values_mid, 'Residence times distribution for increasing D values', os.path.join(image_directory, 'res_times_group_mid.png'))
+plot_histograms(D_values_group4, 'Residence times distribution for first 6 D values (normalized by forcing period)', os.path.join(image_directory2, 'res_times_group1.png'), residence_times_dict_2)
+plot_histograms(D_values_group5, 'Residence times distribution for next 6 D values (normalized by forcing period)', os.path.join(image_directory2, 'res_times_group2.png'), residence_times_dict_2)
+plot_histograms(D_values_group6, 'Residence times distribution for last 6 D values (normalized by forcing period)', os.path.join(image_directory2, 'res_times_group3.png'), residence_times_dict_2)
