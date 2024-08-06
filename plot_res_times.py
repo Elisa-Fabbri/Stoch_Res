@@ -154,3 +154,73 @@ plot_histograms(D_values_group8,
                'Residence times distribution for last 6 D values (normalized by forcing period)',
                 os.path.join(image_directory2, 'res_times_group4.png'),
                 residence_times_dict_2, forcing_period)
+
+#For each residence times dictionary do a plot with 4 subplots, consisting in the 3rd element of each group of 6 D values
+
+# Plot histograms for different groups of D values
+
+group1 = [D_values_group1[2], D_values_group2[2], D_values_group3[2], D_values_group4[2]]
+group2 = [D_values_group5[2], D_values_group6[2], D_values_group7[2], D_values_group8[2]]
+
+def plot_hist_for_groups(D_values, title, filename, residence_times_dict, forcing_period):
+    num_plots = len(D_values)
+    num_rows = 2
+    num_cols = 2
+    num_subplots = num_rows * num_cols
+
+    # Create figure and subplots
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(13, 10))
+    axes = axes.ravel()  # Flatten the axes array for easy indexing
+
+    # Ensure we do not attempt to access more subplots than created
+    for i, D_value in enumerate(D_values):
+        if i >= num_subplots:
+            print(f"Warning: Too many D values ({num_plots}) for {num_subplots} subplots.")
+            break
+
+        ax = axes[i]  # Access the subplot at index i
+
+        # Get residence times for D_value
+        residence_times = residence_times_dict.get(D_value, [])
+        if len(residence_times) == 0:
+            ax.set_visible(False)  # Hide subplot if no data
+            continue
+
+        # Normalize residence times
+        normalized_residence_times = np.array(residence_times) / forcing_period
+
+        # Plot histogram
+        ax.hist(normalized_residence_times, bins=100, alpha=0.5, 
+                label=f'D = {round(D_value, 3)}', range=(0, 5))
+
+        # Add vertical line at T = forcing_period
+        ax.axvline(x=1, color='black', linestyle='--', linewidth=1)
+
+        # Add labels and legend
+        ax.set_ylabel('Counts')
+        ax.set_xlabel(r'Residence times $T/T_{\text{forcing}}$')
+        ax.legend(loc='upper right')
+
+    # Hide any unused subplots
+    for j in range(i + 1, num_subplots):
+        axes[j].set_visible(False)
+
+    # Set title and adjust layout
+    plt.suptitle(title, fontsize=16)
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Leavespace for suptitle
+
+    # Save and close figure
+    plt.savefig(filename)
+    plt.close()
+
+plot_hist_for_groups(group1,
+                        'Residence times distribution for 3rd D value of each group (normalized by forcing period)',
+                        os.path.join(image_directory1, 'res_times_group1_3rd.png'),
+                        residence_times_dict_1, forcing_period)
+
+plot_hist_for_groups(group2,
+                        'Residence times distribution for 3rd D value of each group (normalized by forcing period)',
+                        os.path.join(image_directory2, 'res_times_group1_3rd.png'),
+                        residence_times_dict_2, forcing_period)
+
+
