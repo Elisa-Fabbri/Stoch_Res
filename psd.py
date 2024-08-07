@@ -8,6 +8,111 @@ import functions as fn
 #------------------------------------------------------------------------------------------------------------
 
 binarized_trajectory_04_path = './RK_forcing_0.4/binarized_min.pkl'
+
+directory_04 = os.path.dirname(binarized_trajectory_04_path)
+
+# Configurazione
+config_04 = configparser.ConfigParser()
+config_file_04 = os.path.join(directory_04, 'configuration.txt')
+config_04.read(config_file_04)
+
+# Parametri dal file di configurazione
+omega = float(config_04['simulation_parameters']['omega'])
+h = float(config_04['simulation_parameters']['h'])
+forcing_period = 2 * np.pi / omega
+amplitude = float(config_04['simulation_parameters']['amplitude'])
+a = float(config_04['potential_parameters']['a'])
+b = float(config_04['potential_parameters']['b'])
+
+# Frequenza attesa
+expected_freq = 1 / forcing_period
+
+# Calcolo dei derivati e del minimo potenziale
+min_potential = fn.positive_min_quartic_potential([a, b])
+potential_second_derivative_min = fn.quartic_potential_2derivative(min_potential, [a, b])
+potential_second_derivative_max = fn.quartic_potential_2derivative(0, [a, b])
+
+# Carica la traiettoria binarizzata
+binarized_trajectory_04 = joblib.load(binarized_trajectory_04_path)
+
+ts = binarized_trajectory_04['ts']
+
+# Calcolo delle medie PSD
+PSD_means_04 = {}
+
+# Selezione delle chiavi specifiche per i grafici
+keys = [k for k in binarized_trajectory_04.keys() if k != 'ts']
+keys = sorted(keys, key=lambda x: float(x))
+
+# Indici corrispondenti ai valori di D che verranno effettivamente plottati
+selected_indices = [1, 2, 3, 5, 5, 10]
+selected_keys = [keys[i] for i in selected_indices]
+
+# Calcolo delle PSD per i valori selezionati di D
+for key in selected_keys:
+    binarized_trajectories = np.array(binarized_trajectory_04[key])
+    psd_list_04 = []
+
+    for traj in binarized_trajectories:
+        # Trasformata di Fourier della traiettoria
+        traj_fft = np.fft.fft(traj)
+        n = traj.size
+        freqs = np.fft.fftfreq(n, d=h)
+
+        # Frequenze positive
+        positive_freqs = freqs[freqs > 0]
+        positive_traj_fft = traj_fft[freqs > 0]
+
+        # Calcolo della Power Spectral Density (PSD)
+        power_spectrum = np.abs(positive_traj_fft) ** 2 / (len(traj) * h)
+        psd_list_04.append(power_spectrum)
+
+        # Elimina variabili non necessarie
+        del traj, traj_fft, power_spectrum
+
+    print(f'Key: {key}', 'PSD calcolate')
+    psd_list_04 = np.array(psd_list_04)
+
+    psd_mean_04 = np.mean(psd_list_04, axis=0)
+
+    PSD_means_04[key] = psd_mean_04
+
+PSD_means_04['frequenza'] = positive_freqs
+
+# Elimina variabili non necessarie
+del binarized_trajectories, psd_list_04
+
+# Creazione del grafico con 4 subplot per alcuni valori di rumore di PSD_means_04
+fig, axs = plt.subplots(2, 3, figsize=(16, 8))
+
+for i, key in enumerate(selected_keys):
+    ax = axs[i // 3, i % 3]
+    D_value = float(key)
+    ax.title.set_text(f'D = {round(D_value, 3)}')
+    ax.plot(PSD_means_04['frequenza'], PSD_means_04[key], label=f'D = {round(D_value, 3)}')
+    ax.axvline(x=expected_freq, color='r', linestyle='--', label='Frequenza attesa', alpha=0.1)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel('Frequenza')
+    ax.set_ylabel('PSD')
+    ax.legend(loc='upper right')  # Posiziona la legenda in alto a destra
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.savefig(os.path.join(directory_04, 'PSD_means_04.png'))
+plt.close()
+
+"""
+
+import os
+import joblib
+import numpy as np
+import matplotlib.pyplot as plt
+import configparser
+import functions as fn
+
+#------------------------------------------------------------------------------------------------------------
+
+binarized_trajectory_04_path = './RK_forcing_0.4/binarized_min.pkl'
 binarized_trajectory_02_path = './RK_forcing_0.2/binarized_min.pkl'
 
 directory_04 = os.path.dirname(binarized_trajectory_04_path)
@@ -122,6 +227,7 @@ for key_02, key_04 in zip(binarized_trajectory_02.keys(), binarized_trajectory_0
         # Elimina variabili non necessarie
         del traj_02, traj_04, traj_fft_02, traj_fft_04, power_spectrum_02, power_spectrum_04
 
+    print(f'Key: {key}', 'PSD calcolate')
     psd_list_02 = np.array(psd_list_02)
     psd_list_04 = np.array(psd_list_04)
 
@@ -168,7 +274,7 @@ plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.savefig(os.path.join(directory_04, 'PSD_means_04.png'))
 plt.close()
 
-"""
+######
 
 # Separa le chiavi in due gruppi per creare due immagini
 keys = [k for k in PSD_means.keys() if k != 'frequenza']
