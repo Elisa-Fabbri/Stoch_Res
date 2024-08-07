@@ -159,17 +159,17 @@ plot_histograms(D_values_group8,
 
 # Plot histograms for different groups of D values
 
-group1 = [D_values_group1[2], D_values_group2[2], D_values_group3[2], D_values_group4[2]]
-group2 = [D_values_group5[2], D_values_group6[2], D_values_group7[2], D_values_group8[2]]
+group1 = [D_values_group1[1], D_values_group1[2], D_values_group1[3], D_values_group2[1], D_values_group2[3], D_values_group4[2]]
+group2 = [D_values_group5[1], D_values_group1[2], D_values_group5[3], D_values_group6[1], D_values_group6[3], D_values_group8[2]]
 
 def plot_hist_for_groups(D_values, title, filename, residence_times_dict, forcing_period):
     num_plots = len(D_values)
-    num_rows = 2
+    num_rows = 3
     num_cols = 2
     num_subplots = num_rows * num_cols
 
     # Create figure and subplots
-    fig, axes = plt.subplots(num_rows, num_cols, figsize=(13, 10))
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(13, 15))
     axes = axes.ravel()  # Flatten the axes array for easy indexing
 
     # Ensure we do not attempt to access more subplots than created
@@ -214,12 +214,12 @@ def plot_hist_for_groups(D_values, title, filename, residence_times_dict, forcin
     plt.close()
 
 plot_hist_for_groups(group1,
-                        'Residence times distribution for 3rd D value of each group (normalized by forcing period)',
+                        'Residence times distribution for increasing D values (normalized by forcing period)',
                         os.path.join(image_directory1, 'res_times_group1_3rd.png'),
                         residence_times_dict_1, forcing_period)
 
 plot_hist_for_groups(group2,
-                        'Residence times distribution for 3rd D value of each group (normalized by forcing period)',
+                        'Residence times distribution for increasing D values (normalized by forcing period)',
                         os.path.join(image_directory2, 'res_times_group1_3rd.png'),
                         residence_times_dict_2, forcing_period)
 
