@@ -1,6 +1,5 @@
 import os
 import joblib
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import configparser
@@ -53,7 +52,7 @@ assert amplitude_04 != amplitude_02
 assert a_04 == a_02
 assert b_04 == b_02
 
-#Rinomina i valori uguali
+# Rinomina i valori uguali
 
 omega = omega_04
 h = h_04
@@ -83,33 +82,46 @@ ts = ts_02
 # Calcolo delle medie PSD
 PSD_means_02 = {}
 PSD_means_04 = {}
+
 for key_02, key_04 in zip(binarized_trajectory_02.keys(), binarized_trajectory_04.keys()):
     assert key_02 == key_04
     key = key_02
     if key == 'ts':
         continue
+
     binarized_trajectories_02 = np.array(binarized_trajectory_02[key])
     binarized_trajectories_04 = np.array(binarized_trajectory_04[key])
     psd_list_02 = []
     psd_list_04 = []
-    for traj_02, traj_04 in zip(binarized_trajectories_02, binarized_trajectories_04):
-        traj_02 = np.array(traj_02)
-        traj_04 = np.array(traj_04)
+
+    # Process each trajectory in chunks
+    for i in range(len(binarized_trajectories_02)):
+        # Process each trajectory in chunks
+        traj_02 = np.array(binarized_trajectories_02[i])
+        traj_04 = np.array(binarized_trajectories_04[i])
+
         # Trasformata di Fourier della traiettoria
         traj_fft_02 = np.fft.fft(traj_02)
         traj_fft_04 = np.fft.fft(traj_04)
         n = traj_02.size
         h = ts[1] - ts[0]
         freqs = np.fft.fftfreq(n, d=h)
+
         # Frequenze positive
         positive_freqs = freqs[freqs > 0]
         positive_traj_fft_02 = traj_fft_02[freqs > 0]
         positive_traj_fft_04 = traj_fft_04[freqs > 0]
+
         # Calcolo della Power Spectral Density (PSD)
-        power_spectrum_02 = np.abs(positive_traj_fft_02)**2 / (len(traj_02) * h)
-        power_spectrum_04 = np.abs(positive_traj_fft_04)**2 / (len(traj_04) * h)
+        power_spectrum_02 = np.abs(positive_traj_fft_02) ** 2 / (len(traj_02) * h)
+        power_spectrum_04 = np.abs(positive_traj_fft_04) ** 2 / (len(traj_04) * h)
+
         psd_list_02.append(power_spectrum_02)
         psd_list_04.append(power_spectrum_04)
+
+        # Elimina variabili non necessarie
+        del traj_02, traj_04, traj_fft_02, traj_fft_04, power_spectrum_02, power_spectrum_04
+
     psd_list_02 = np.array(psd_list_02)
     psd_list_04 = np.array(psd_list_04)
 
@@ -122,6 +134,8 @@ for key_02, key_04 in zip(binarized_trajectory_02.keys(), binarized_trajectory_0
     PSD_means_04[key] = psd_mean_04
     PSD_means_04['ts'] = positive_freqs
 
+# Elimina variabili non necessarie
+del binarized_trajectories_02, binarized_trajectories_04, psd_list_02, psd_list_04
 
 # Rinomina la chiave 'ts' in 'frequenza'
 
@@ -238,4 +252,5 @@ ax.set_yscale('log')
 plt.savefig(os.path.join(directory, f'SNR_{threshold_choice}_log.png'))
 #plt.show()
 plt.close()
-"""
+    
+    """
