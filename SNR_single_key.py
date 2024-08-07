@@ -76,10 +76,23 @@ PSD_means = np.mean(PSD_list, axis=0)
 max_index = np.argmin(np.abs(positive_freqs - expected_freq))  # indice più vicino alla frequenza attesa
 peak_value = PSD_means[max_index]
 
+print('key', key)
+
 # Trova la base del picco
-num_neighbors = 5
-neighbors_indices = np.arange(max_index - num_neighbors, max_index + num_neighbors + 1)
-peak_base = np.mean(PSD_means[neighbors_indices])
+num_neighbors = 50
+not_considered_points = 0
+start_index = max(0, max_index - not_considered_points - num_neighbors)
+end_index = min(len(PSD_means), max_index + not_considered_points + num_neighbors + 1)
+baseline_indices = list(range(start_index, max_index - not_considered_points)) + list(range(max_index + not_considered_points, end_index))
+
+peak_base = np.mean(PSD_means[baseline_indices])
+
+#all_indices = baseline_indices + [max_index]
+#all_indices = sorted(all_indices)
+
+#print('the peak value is ', peak_value)
+#for base in PSD_means[all_indices]:
+#    print('neig', base)
 
 SNR = 2 * peak_value / peak_base
 
