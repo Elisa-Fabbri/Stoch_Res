@@ -18,8 +18,8 @@ filename_bin_traj_04 = os.path.basename(binarized_trajectory_04_path)
 filename_bin_traj_02 = os.path.basename(binarized_trajectory_02_path)
 
 # Estrai la scelta della soglia dal nome del file
-threshold_choice_04 = filename_bin_traj_04.split('_')[2].split('.')[0]
-threshold_choice_02 = filename_bin_traj_02.split('_')[2].split('.')[0]
+#threshold_choice_04 = filename_bin_traj_04.split('_')[2].split('.')[0]
+#threshold_choice_02 = filename_bin_traj_02.split('_')[2].split('.')[0]
 
 
 # Configurazione
