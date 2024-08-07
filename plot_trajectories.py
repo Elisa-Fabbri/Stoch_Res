@@ -78,7 +78,7 @@ except ValueError:
 #Runno una simulazione per ciascun valore di noise intensity scelto con stessi parametri 
 #delle simulazioni precedenti
 
-t_end = float(config['simulation_parameters']['t_end'])//250
+t_end = float(config['simulation_parameters']['t_end'])//100
 h = float(config['simulation_parameters']['h'])
 x_0 = float(config['simulation_parameters']['x_0'])
 t_0 = float(config['simulation_parameters']['t_0'])
@@ -115,10 +115,29 @@ for i, key in enumerate(chosen_keys):
     axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=1, alpha=0.5)
     #Plotto la forzante periodica normalizzata tra -1 e 1
     axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=1, linestyle='--', alpha=0.5)
-    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)))
+    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)), fontsize = 16)
 plt.tight_layout()
 #plt.show()
 filename = 'traiettorie_scelte'
 plt.savefig(os.path.join(image_folder, filename))
 plt.close()
 
+fig,axs = plt.subplots(3, 1, figsize=(15,15))
+axs = axs.ravel()
+
+for i, key in enumerate(chosen_keys):
+    trajectories = results_dict[key]
+    results_dict[key] = fn.binarize_trajectory(trajectories,1,-1)
+    value = results_dict[key]
+    traj = value[0]
+    axs[i].plot(ts, traj, label='Noise intensity: ' + str(round(float(key), 3)), linewidth=1)
+    #Plotto anche la forzante periodica
+    axs[i].plot(ts, amplitude * np.cos(omega * ts), label='Periodic forcing', linewidth=1, alpha=0.5)
+    #Plotto la forzante periodica normalizzata tra -1 e 1
+    axs[i].plot(ts, np.cos(omega * ts), label='Normalized periodic forcing', linewidth=1, linestyle='--', alpha=0.5)
+    axs[i].set_title('Noise intensity: ' + str(round(float(key), 3)), fontsize = 16)
+plt.tight_layout()
+#plt.show()
+filename = 'traiettorie_scelte_bin'
+plt.savefig(os.path.join(image_folder, filename))
+plt.close()
